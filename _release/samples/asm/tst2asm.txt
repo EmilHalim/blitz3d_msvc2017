@@ -1,0 +1,13 @@
+.db  90  ;no opreation code
+.db  90
+.db  90
+.db  90
+sub esp,8
+mov eax,_vbody
+mov [esp],eax
+call __bbStrLoad 
+mov [esp],eax
+call _fprint
+mov eax,200
+
+
