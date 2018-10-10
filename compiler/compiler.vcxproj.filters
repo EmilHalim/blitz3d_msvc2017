@@ -1,0 +1,54 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="assem_x86\asm_insts.cpp" />
+    <ClCompile Include="assem_x86\assem_x86.cpp" />
+    <ClCompile Include="assem_x86\operand.cpp" />
+    <ClCompile Include="codegen_x86\codegen_x86.cpp" />
+    <ClCompile Include="codegen_x86\tile.cpp" />
+    <ClCompile Include="decl.cpp" />
+    <ClCompile Include="declnode.cpp" />
+    <ClCompile Include="environ.cpp" />
+    <ClCompile Include="exprnode.cpp" />
+    <ClCompile Include="node.cpp" />
+    <ClCompile Include="parser.cpp" />
+    <ClCompile Include="prognode.cpp" />
+    <ClCompile Include="std.cpp" />
+    <ClCompile Include="stmtnode.cpp" />
+    <ClCompile Include="toker.cpp" />
+    <ClCompile Include="type.cpp" />
+    <ClCompile Include="varnode.cpp" />
+    <ClCompile Include="..\SmallerC\smalcMasmPlgIn.cpp">
+      <Filter>SmallerC</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="assem.h" />
+    <ClInclude Include="assem_x86\assem_x86.h" />
+    <ClInclude Include="assem_x86\insts.h" />
+    <ClInclude Include="assem_x86\operand.h" />
+    <ClInclude Include="codegen.h" />
+    <ClInclude Include="codegen_x86\codegen_x86.h" />
+    <ClInclude Include="codegen_x86\tile.h" />
+    <ClInclude Include="decl.h" />
+    <ClInclude Include="declnode.h" />
+    <ClInclude Include="environ.h" />
+    <ClInclude Include="ex.h" />
+    <ClInclude Include="exprnode.h" />
+    <ClInclude Include="label.h" />
+    <ClInclude Include="node.h" />
+    <ClInclude Include="nodes.h" />
+    <ClInclude Include="parser.h" />
+    <ClInclude Include="prognode.h" />
+    <ClInclude Include="std.h" />
+    <ClInclude Include="stmtnode.h" />
+    <ClInclude Include="toker.h" />
+    <ClInclude Include="type.h" />
+    <ClInclude Include="varnode.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="SmallerC">
+      <UniqueIdentifier>{9006f48a-3529-4e28-9170-f79980ad9269}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
