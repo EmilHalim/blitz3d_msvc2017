@@ -176,9 +176,9 @@ int fsetpos(FILE*, fpos_t*);
 #endif
 
 #ifndef NO_HIEGASM
-//int checkAsm();
-//int checkExtension();
-//int checkBlitz();
+int checkAsm();
+int checkExtension();
+int checkBlitz();
 int tokExt;
 int tokExt2;
 #endif // NO_HIEGASM
@@ -1119,9 +1119,11 @@ int GetTokenByWord(char* word)
         if(i<=31 && !_stricmp(arws[i], word))  return arwtk[i]; // upper or lower case registers name
         if(i>31  && !strcmp(arws[i], word))  return arwtk[i];
        }
-
+      if(checkAsm())   return tokAsmKeyword;
    }
 #endif // NO_HIEGASM
+
+  if(checkExtension())   return tokExtension;
 
   return tokIdent;
 }
@@ -2219,7 +2221,34 @@ int GetToken(void)
 
         SkipSpace(0);
         GetIdent();
-
+#ifndef NO_HIEGASM
+        if (!strcmp(TokenIdentName, "option"))
+          {
+             SkipSpace(0);
+             GetIdent();
+             if (!strcmp(TokenIdentName, "ia"))
+              {
+                  SkipSpace(0);
+                  if (*p == '+')
+                   {
+                      ShiftCharN(1);
+                      mode=Mix_C_Asm_mode;
+                   }
+                  else if(*p == '-')
+                  {
+                      ShiftCharN(1);
+                      mode=C_mode;
+                  }
+                 else
+                   mode=Mix_C_Asm_mode;
+              }
+			 else if (!strcmp(TokenIdentName, "LST"))
+              {
+				  printf2(" #pragma option LST\n");
+			  }
+              continue;
+          }
+#endif // NO_HIEGASM
         if (strcmp(TokenIdentName, "pack"))
           errorDirective();
         // TBD??? fail if inside a structure declaration
@@ -2814,7 +2843,11 @@ int exprUnary(int tok, int* gotUnary, int commaSeparator, int argOfSizeOf)
       push2(tokIdent, id);
       *gotUnary = 1;
     }
-    else if (tok == tokIdent)
+    else if (tok == tokIdent 
+#ifndef NO_HIEGASM		
+		||(/*tok == tokEax*/tok >= tokEax && tok <= tokEbp)
+#endif // NO_HIEGASM		
+		)
     {
       push2(tok, AddIdent(TokenIdentName));
 	  if(/*tok == tokEax*/tok >= tokEax && tok <= tokEbp)PushSyntax2(tok, AddIdent(TokenIdentName));
@@ -8619,7 +8652,7 @@ void AddFxnParamSymbols(int SyntaxPtr)
 }
 
 #ifndef NO_HIEGASM
-//#include "masm.c"
+#include "masm.c"
 #endif // NO_HIEGASM
 
 STATIC
@@ -9538,7 +9571,7 @@ int ParseStatement(int tok, int BrkCntTarget[2], int casesIdx)
        for (;;)
         {
             if (tok == tokendxasm) break;
-           // tok = ProcessAsm(tok);
+            tok = ProcessAsm(tok);
             printf2("\n");
         }
 
@@ -9550,7 +9583,7 @@ int ParseStatement(int tok, int BrkCntTarget[2], int casesIdx)
     {
       mode = Asm_mode;
       tok = GetToken();
-      //tok = ProcessAsm(tok);
+      tok = ProcessAsm(tok);
       mode=C_mode;
     }
     
@@ -9574,13 +9607,20 @@ int ParseStatement(int tok, int BrkCntTarget[2], int casesIdx)
 #ifndef NO_HIEGASM
     else if (tok == tokAsmKeyword )
     {
-       // tok = ProcessAsm(tok);
-        
+        tok = ProcessAsm(tok);
+        //tok = GetToken();
     } 
 #endif // NO_HIEGASM
     else
     {
-	  
+	  if (mode == Mix_C_Asm_mode && checkAsm()) 
+	  {
+		  if(tokExt >= tokEax && tokExt <= tokEbp) tok = ProcessAsm(tokExt);
+		  else tok = ProcessAsm(tokAsmKeyword); 
+		  tokExt = 0; 
+	  }
+	  else 
+	  {
 		      tok = ParseExpr(tok, &gotUnary, &synPtr, &constExpr, &exprVal, tokGotoLabel, 0);
 		      if (tok == tokGotoLabel)
 		      {
@@ -9601,7 +9641,7 @@ int ParseStatement(int tok, int BrkCntTarget[2], int casesIdx)
 				      GenExpr();
 		      }
 		      tok = GetToken();
-	  
+	  }
     }
 
   } while (statementNeeded);
@@ -9652,7 +9692,7 @@ int ParseBlock(int BrkCntTarget[2], int casesIdx)
        for (;;)
         {
             if (tok == tokendxasm) break;
-            //tok = ProcessAsm(tok);
+            tok = ProcessAsm(tok);
             printf2("\n");
         }
 	  
@@ -9665,7 +9705,8 @@ int ParseBlock(int BrkCntTarget[2], int casesIdx)
     {
       //mode = Asm_mode;
 	   tok = GetToken();
-	   //tok = ProcessAsm(tok);
+	   tok = ProcessAsm(tok);
+      //mode=C_mode;
     }
 /*
 	else if(tok == tokExtension)
