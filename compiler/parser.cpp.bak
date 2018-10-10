@@ -9,9 +9,6 @@ static const int TEXTLIMIT=16384;
 static const int TEXTLIMIT=1024*1024-1;
 #endif
 
-string AsmData,notpPP;        //Emil  inlin asm 9/10/2018
-extern int  DoSmalrc(char* src, char* dst);
-
 enum{
 	STMTS_PROG,STMTS_BLOCK,STMTS_LINE
 };
@@ -77,18 +74,6 @@ StmtSeqNode *Parser::parseStmtSeq( int scope ){
 	a_ptr<StmtSeqNode> stmts( d_new StmtSeqNode( incfile ) );
 	parseStmtSeq( stmts,scope );
 	return stmts.release();
-}
-
-string& removQuto(string& st)
-{
-	size_t start_pos = st.find("\"");
-	if (start_pos == std::string::npos)
-		return st;
-	st.replace(start_pos, 1, "");
-	start_pos = st.find("\"");
-	if (start_pos == std::string::npos)
-		return st;
-	return st.replace(start_pos, 1, " ");
 }
 
 void Parser::parseStmtSeq( StmtSeqNode *stmts,int scope ){
@@ -368,121 +353,6 @@ void Parser::parseStmtSeq( StmtSeqNode *stmts,int scope ){
 				result=d_new LabelNode( t,datas->size() );
 			}
 			break;
-		case  ASM:                   //Emil  inlin asm 8/10/2018
-		    {
-			    toker->next();
-			    if (toker->curr() != STRINGCONST) exp("Asm cost sting");
-			    string t = removQuto(toker->text());
-			    toker->next();
-			    result = d_new AsmNode(t);
-		    }
-			break;
-		case  ASMINC:                   //Emil  inlin asm 8/10/2018
-		    {
-			    toker->next();
-			    if (toker->curr() != STRINGCONST) exp("Asm include file");
-			    string f = toker->text();
-				f = f.substr(1, f.size() - 2);
-				char buff[MAX_PATH], *p;
-				if (GetFullPathName(f.c_str(), MAX_PATH, buff, &p)) f = buff;
-			    toker->next();
-            again:
-				ifstream asminc(f, std::ifstream::in);
-				if (asminc.is_open())
-				{
-					string line,src="\n";
-					while (getline(asminc, line))
-					{
-						src += "\t" + line + '\n';
-					}
-					asminc.close();
-									   
-					result = d_new AsmNode(src);
-				}
-				else
-				{
-					if(notpPP.empty()){}
-					notpPP = "c:\\program files\\Notepad++\\notepad++.exe";
-					SHELLEXECUTEINFO rSEI = { 0 };
-					rSEI.cbSize = sizeof(rSEI);
-					rSEI.lpVerb = "open";
-					rSEI.lpFile = notpPP.c_str();
-					rSEI.lpParameters = f.c_str();
-					rSEI.nShow = SW_NORMAL;
-					rSEI.fMask = SEE_MASK_NOCLOSEPROCESS;
-					ShellExecuteEx(&rSEI);   // you should check for an error here
-					while (TRUE) {
-						DWORD nStatus = MsgWaitForMultipleObjects(
-							1, &rSEI.hProcess, FALSE,
-							INFINITE, QS_ALLINPUT   // drop through on user activity 
-						);
-						if (nStatus == WAIT_OBJECT_0) {  // done: the program has ended
-							break;
-						}
-						MSG msg;     // else process some messages while waiting...
-						while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
-							DispatchMessage(&msg);
-						}
-					}  // launched process has exited
-					//Sleep(500);
-					goto again;
-				}
-		    }
-	  	    break;
-		case ASMDATA:                    //Emil  inlin asm 9/10/2018
-		    { 
-			    toker->next();
-				while (toker->curr() != ASMENDDATA)
-				{
-					//if (toker->curr() != STRINGCONST) exp("asm data must be in string litral");
-					AsmData += removQuto(toker->text());
-					toker->next();
-				}
-				AsmData += "\t.align	4";
-				toker->next();
-		    }
-		    break;
-		case ASMENDDATA:
-		    {
-			     exp("AsmEndData with out AsmData ");
-		    }
-			break;
-		case CCODE:
-		    {
-			     string cCode;
-				 toker->next();
-				 while (toker->curr() != CENDCODE)
-				 {
-					 //if (toker->curr() != STRINGCONST) exp("c code must be in string litral");
-					 cCode += removQuto(toker->text());
-					 toker->next();
-				 }
-				 ofstream out("file.c", std::ofstream::out);
-				 out  << cCode << endl;
-				 out.close();
-				 if (DoSmalrc("file.c", "file.asm"))
-				 {
-					 ifstream asminc("file.asm", std::ifstream::in);
-					 if (asminc.is_open())
-					 {
-						 string line, src = "\n";
-						 while (getline(asminc, line))
-						 {
-							 src += line + '\n';
-						 }
-						 asminc.close();
-						 AsmData += src;
-					 }
-					 else 	exp("can not include Asm file file.asm");
-				 }
-				 toker->next();
-		    }
-		    break;
-		case CENDCODE:
-		    {
-			    exp("CEndCode with out Ccode ");
-		    }
-		    break;
 		default:
 			return;
 		}

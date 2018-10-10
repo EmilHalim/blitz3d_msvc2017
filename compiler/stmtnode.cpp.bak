@@ -584,15 +584,3 @@ void ReadNode::translate( Codegen *g ){
 	g->code( var->store( g,t ) );
 }
 
-////////////////////
-// Asm statement //
-////////////////////
-void AsmNode::semant(Environ *e) {
-	
-}
-
-void AsmNode::translate(Codegen *g) {
-	g->code(InlineAsm(line));
-}
-
-

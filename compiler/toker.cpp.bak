@@ -79,13 +79,6 @@ static void makeKeywords(){
 	alphaTokes["Shr"]=SHR;
 	alphaTokes["Sar"]=SAR;
 
-	alphaTokes["Asm"] = ASM;                    //Emil  inlin asm 8/10/2018
-	alphaTokes["AsmInc"] = ASMINC;                    //Emil  inlin asm 9/10/2018
-	alphaTokes["AsmData"] = ASMDATA;                    //Emil  inlin asm 9/10/2018
-	alphaTokes["AsmEndData"] = ASMENDDATA;                    //Emil  inlin asm 9/10/2018
-	alphaTokes["Ccode"] = CCODE;                    //Emil  inlin c 10/10/2018
-	alphaTokes["CEndCode"] = CENDCODE;                    //Emil  inlin c 10/10/2018
-
 	map<string,int>::const_iterator it;
 	for( it=alphaTokes.begin();it!=alphaTokes.end();++it ){
 		lowerTokes[tolower(it->first)]=it->second;
@@ -142,10 +135,6 @@ void Toker::nextline(){
 		if( isspace( c ) ){ ++k;continue; }
 		if( c==';' ){
 			for( ++k;line[k]!='\n';++k ){}
-			continue;
-		}
-		if (c == '/' &&  line[k+1]=='/') {                           //Emil 5/10/2018  ' c/c++ comment
-			for (++k; line[k] != '\n'; ++k) {}
 			continue;
 		}
 		if( c=='.' && isdigit( line[k+1] ) ){
@@ -207,10 +196,6 @@ void Toker::nextline(){
 		int n=line[k+1];
 		if( (c=='<'&&n=='>')||(c=='>'&&n=='<') ){
 			tokes.push_back( Toke( NE,from,k+=2 ) );
-			continue;
-		}
-		if (c == '!'&&n == '=' ) {                     //Emil 5/10/2018  ' c/c++ not equ
-			tokes.push_back(Toke(NE, from, k += 2));
 			continue;
 		}
 		if( (c=='<'&&n=='=')||(c=='='&&n=='<') ){

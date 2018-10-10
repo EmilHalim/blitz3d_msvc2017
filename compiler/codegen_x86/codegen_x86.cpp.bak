@@ -335,13 +335,7 @@ Tile *Codegen_x86::munch( TNode *t ){
 			}
 			if( !q ) q=d_new Tile( "\tmov\t"+s+",%l\n",munchReg( t->l ) );
 		}
-	case IR_InAsm:                                //Emil  inlin asm 8/10/2018
-		if (t->sconst.size())
-		{
-			q = d_new Tile("\t" + t->sconst + '\n');
-		}
 		break;
-	break;
 	}
 	if( !q ) q=munchReg( t );
 	return q;

@@ -28,10 +28,6 @@ using namespace std;
 
 #undef environ
 
-extern string AsmData;           //Emil  inlin asm 9/10/2018
-extern void initSmalrc();
-
-
 static void showInfo(){
 	const int major=(VERSION&0xffff)/100,minor=(VERSION&0xffff)%100;
 	cout<<"BlitzCC V"<<major<<"."<<minor<<endl;
@@ -143,9 +139,7 @@ static void demoError(){
 
 int _cdecl main( int argc,char *argv[] ){
 
-	string in_file,out_file,args,asm_out;
-
-	_putenv("blitzpath=C:\blitz3d_msvc2017/_release");
+	string in_file,out_file,args;
 
 	bool debug=false,quiet=false,veryquiet=false,compileonly=false;
 	bool dumpkeys=false,dumphelp=false,showhelp=false,dumpasm=false;
@@ -187,7 +181,6 @@ int _cdecl main( int argc,char *argv[] ){
 				if( args.size() ) args+=' ';
 				args+=t;
 			}
-			asm_out = in_file.substr(0, in_file.find('.')) + ".asm";
 		}
 	}
 
@@ -200,8 +193,6 @@ int _cdecl main( int argc,char *argv[] ){
 	if( showhelp ) showHelp();
 	if( dumpkeys ) dumpKeys( true,true,dumphelp );
 	if( versinfo ) versInfo();
-
-	initSmalrc();
 
 	if( !in_file.size() ) return 0;
 
@@ -250,15 +241,9 @@ int _cdecl main( int argc,char *argv[] ){
 		Codegen_x86 codegen( asmcode,debug );
 
 		prog->translate( &codegen,userFuncs );
-		
-		//Emil  inlin asm 9/10/2018
-		asmcode << AsmData;
 
 		if( dumpasm ){
-			//cout<<endl<<string( qbuf.data(),qbuf.size() )<<endl;
-			ofstream out(asm_out.c_str(), std::ofstream::out);
-			out << endl << string(qbuf.data(), qbuf.size()) << endl;
-			out.close();
+			cout<<endl<<string( qbuf.data(),qbuf.size() )<<endl;
 		}
 
 		//assemble
@@ -279,16 +264,9 @@ int _cdecl main( int argc,char *argv[] ){
 
 	if( out_file.size() ){
 		if( !veryquiet ) cout<<"Creating executable \""<<out_file<<"\"..."<<endl;
-#ifdef _DEBUG 
-		if( !module->createExe( out_file.c_str(),"runtime.dll" ) ){
+		if( !module->createExe( out_file.c_str(),(home+"/bin/runtime.dll").c_str() ) ){
 			err( "Error creating executable" );
 		}
-#else
-		if (!module->createExe(out_file.c_str(), (home + "/bin/runtime.dll").c_str())) {
-			if (!module->createExe(out_file.c_str(), "runtime.dll"))
-			        err("Error creating executable");
-	    }
-#endif
 	}else if( !compileonly ){
 		void *entry=module->link( runtimeModule );
 		if( !entry ) return 0;
@@ -297,7 +275,7 @@ int _cdecl main( int argc,char *argv[] ){
 		Debugger *debugger=0;
 
 		if( debug ){
-			dbgHandle=LoadLibrary( "debugger.dll" );
+			dbgHandle=LoadLibrary( (home+"/bin/debugger.dll").c_str() );
 			if( dbgHandle ){
 				typedef Debugger *(_cdecl*GetDebugger)( Module*,Environ* );
 				GetDebugger gd=(GetDebugger)GetProcAddress( dbgHandle,"debuggerGetDebugger" );

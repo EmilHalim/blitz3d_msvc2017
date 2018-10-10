@@ -714,7 +714,7 @@ void MainFrame::build( bool exec,bool publish ){
 		prefs.prg_lastbuild=e->getName();
 	}
 
-	compile( prefs.homeDir+"/bin/blitzcc -q -a "+opts+" \""+src+"\" "+prefs.cmd_line );
+	compile( prefs.homeDir+"/bin/blitzcc -q "+opts+" \""+src+"\" "+prefs.cmd_line );
 
 	if( !src_file.size() ) e->setName( "" );
 }

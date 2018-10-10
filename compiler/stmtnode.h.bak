@@ -226,10 +226,4 @@ struct RestoreNode : public StmtNode{
 	void translate( Codegen *g );
 };
 
-struct AsmNode : public StmtNode {
-	string line;
-	AsmNode(const string &s) :line(s) {}
-	void semant(Environ *e);
-	void translate(Codegen *g);
-};
 #endif
