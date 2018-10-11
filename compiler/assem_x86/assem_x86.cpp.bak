@@ -76,9 +76,8 @@ void Assem_x86::emitd( int n ){
 
 void Assem_x86::emitImm( const Operand &o,int size ){
 
-	//Emil 9-10-2018  comment net line to allow db ,dw instruction in code
-	//if( size<4 && o.immLabel.size() ) throw Ex( "immediate value cannot by a label" );
-	
+	if( size<4 && o.immLabel.size() ) throw Ex( "immediate value cannot by a label" );
+
 	switch( size ){
 	case 1:emit( o.imm );return;
 	case 2:emitw( o.imm );return;
@@ -209,16 +208,16 @@ void Assem_x86::assemInst( const string &name,const string &lhs,const string &rh
 void Assem_x86::assemDir( const string &name,const string &op ){
 
 	if( !op.size() ) throw Ex( "operand error" );
-	// Emil 11/10/2018 DevPac Assembler & Amiga BlitzBasic2
-	if( name==".db" || name[3]|32=='b'|| name[3] | 32 == 's'){
-		if( op[0]!='\"' && op[0] != '\'' ) emitImm( op,1 );
+
+	if( name==".db" ){
+		if( op[0]!='\"' ) emitImm( op,1 );
 		else{
-			if( op.size()<2 || op[op.size()-1]!='\"' && op[op.size() - 1] != '\'') throw Ex( "operand error" );
+			if( op.size()<2 || op[op.size()-1]!='\"' ) throw Ex( "operand error" );
 			for( int k=1;k<op.size()-1;++k ) emit( op[k] );
 		}
-	}else if( name==".dw" || name[3] | 32 == 'w'){
+	}else if( name==".dw" ){
 		emitImm( op,2 );
-	}else if( name==".dd" || name[3] | 32 == 'd' || name[3] | 32 == 'l'){
+	}else if( name==".dd" ){
 		emitImm( op,4 );
 	}else if( name==".align" ){
 		Operand o( op );o.parse();
@@ -276,7 +275,7 @@ void Assem_x86::assemLine( const string &line ){
 	}
 
 	//pseudo op?
-	if( name[0]=='.' || (name[0]|32=='d'&&name[1]|32 =='c'&&name[2]=='.')){  // Emil 11/10/2018 DevPac Assembler & Amiga BlitzBasic2
+	if( name[0]=='.' ){
 		for( int k=0;k<ops.size();++k ) assemDir( name,ops[k] );
 		return;
 	}
