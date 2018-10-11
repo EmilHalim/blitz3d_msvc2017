@@ -85,6 +85,8 @@ static void makeKeywords(){
 	alphaTokes["AsmEndData"] = ASMENDDATA;                    //Emil  inlin asm 9/10/2018
 	alphaTokes["Ccode"] = CCODE;                    //Emil  inlin c 10/10/2018
 	alphaTokes["CEndCode"] = CENDCODE;                    //Emil  inlin c 10/10/2018
+	alphaTokes["NewType"] = NEWTYPE;                     // Emil 11/10/2018  Amiga BlitzBasic2
+	alphaTokes["End NewType"] = ENDNEWTYPE;
 
 	map<string,int>::const_iterator it;
 	for( it=alphaTokes.begin();it!=alphaTokes.end();++it ){

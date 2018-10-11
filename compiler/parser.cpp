@@ -321,10 +321,14 @@ void Parser::parseStmtSeq( StmtSeqNode *stmts,int scope ){
 				datas->push_back( d_new DataDeclNode( expr ) );
 			}while( toker->curr()==',' );
 			break;
+		case NEWTYPE:       // Emil 11/10/2018  Amiga BlitzBasic2 NewType
+			toker->next();
+			if(toker->curr() != '.')  exp(". after NewType keyword");
 		case TYPE:
 			if( scope!=STMTS_PROG ) ex( "'Type' can only appear in main program" );
 			toker->next();structs->push_back( parseStructDecl() );
 			break;
+		case '#':            // Emil 11/10/2018  Amiga BlitzBasic2 Const
 		case BBCONST:
 			if( scope!=STMTS_PROG ) ex( "'Const' can only appear in main program" );
 			do{
@@ -499,7 +503,11 @@ string Parser::parseTypeTag(){
 	case '%':toker->next();return "%";
 	case '#':toker->next();return "#";
 	case '$':toker->next();return "$";
-	case '.':toker->next();return parseIdent();
+	case '.':toker->next();             // Emil 11/10/2018 Amiga BlitzBasic2
+		if (toker->text() == "l"|| toker->text() == "w"|| toker->text() == "b") { toker->next(); return "%"; }
+		else if (toker->text() == "f") { toker->next(); return "#"; }
+		else if (toker->text() == "s") { toker->next(); return "$"; }
+		else return parseIdent();
 	}
 	return "";
 }
@@ -608,14 +616,29 @@ DeclNode *Parser::parseStructDecl(){
 	string ident=parseIdent();
 	while( toker->curr()=='\n' ) toker->next();
 	a_ptr<DeclSeqNode> fields( d_new DeclSeqNode() );
-	while( toker->curr()==FIELD ){
-		do{
-			toker->next();
-			fields->push_back( parseVarDecl( DECL_FIELD,false ) );
-		}while( toker->curr()==',' );
-		while( toker->curr()=='\n' ) toker->next();
+	// Emil 11/10/2018  Amiga BlitzBasic2
+	if (toker->curr() == FIELD) {
+		while (toker->curr() == FIELD && toker->curr() != ENDNEWTYPE) {
+
+			do {
+				toker->next();
+				fields->push_back(parseVarDecl(DECL_FIELD, false));
+			} while (toker->curr() == ',');
+			while (toker->curr() == '\n') toker->next();
+		}
 	}
-	if( toker->curr()!=ENDTYPE ) exp( "'Field' or 'End Type'" );
+	else if (toker->curr() == IDENT)
+	{
+		while (toker->curr() == IDENT && toker->curr() != ENDNEWTYPE) {
+			fields->push_back(parseVarDecl(DECL_FIELD, false));
+			while (toker->curr() == ',') {
+				toker->next();
+				fields->push_back(parseVarDecl(DECL_FIELD, false));
+			} 
+			while (toker->curr() == '\n') toker->next();
+		}
+	}
+	if( toker->curr()!=ENDTYPE && toker->curr() != ENDNEWTYPE) exp( "'Field' or 'End Type'" );
 	toker->next();
 	DeclNode *d=d_new StructDeclNode( ident,fields.release() );
 	d->pos=pos;d->file=incfile;
